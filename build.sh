@@ -31,11 +31,17 @@ function find_tags {
 	done
 }
 
-# Run a command with all tags for this image
+# Run a command with all TAGS for this image
 function for_all_tags {
 	for TAG in "${TAGS[@]}"; do
 		"$@" "$IMG_NAME:$(basename "$TAG")"
 	done
+}
+
+# Apply TAGS to this image
+function tag_image {
+	for_all_tags docker tag "$IMG_ID"
+	for_all_tags echo Tagged image:
 }
 
 # Use variable IMG_ID to start a container
@@ -54,10 +60,9 @@ cd "$REPO_DIR"
 source "$SCRIPTS_DIR/helpers.sh"
 docker_reachable
 
-# Customizations to build workflow
+# Customizations to build process
 source "$REPO_DIR/custom/build.sh"
 var_is_set "IMG_NAME"
-
 
 TASK="${1-}"
 case "$TASK" in
@@ -65,10 +70,9 @@ case "$TASK" in
 	"--tag")
 		build_image
 		find_tags
-		for_all_tags docker tag "$IMG_ID"
-		for_all_tags echo Tagged image:
+		tag_image
 	;;
-	# Build image and run test with default configuration
+	# Build image and run test
 	"--test")
 		build_image
 		test_image
@@ -90,8 +94,7 @@ case "$TASK" in
 		fi
 
 		build_image
-		for_all_tags docker tag "$IMG_ID"
-		for_all_tags echo Tagged image:
+		tag_image
 		for_all_tags docker push
 	;;
 	# Build image and output image identifier
