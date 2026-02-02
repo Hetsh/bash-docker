@@ -288,6 +288,15 @@ function update_pypi {
 	process_update "$PKG" "$CURRENT_VERSION" "$NEW_VERSION"
 }
 
+# The default update process
+function check_for_updates {
+	var_is_set "BASE_IMAGE_VERSION_REGEX"
+	var_is_set "IMG_NAME"
+
+	update_base_image "$BASE_IMAGE_VERSION_REGEX"
+	update_packages "$IMG_NAME"
+}
+
 
 # Simpler git usage, relative file paths
 SCRIPT=$(realpath "$0")
@@ -304,6 +313,8 @@ source "$REPO_DIR/custom/update.sh"
 var_is_set "MAIN_ITEM"
 var_is_set "GIT_VERSION"
 
+# Start the (maybe overwritten) update process
+check_for_updates
 if ! updates_available; then
 	echo "No updates available."
 	exit "$SUCCESS"
