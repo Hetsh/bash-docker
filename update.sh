@@ -150,17 +150,29 @@ function update_base_image {
 # Check the provided Docker image for package updates with a package manager
 function update_packages {
 	local IMG="$1"
-	local UPGRADE_COMMAND="$2"
-	local UPGRADEABLE_PACKAGES_FUNCTION="$3"
-	local PROCESS_LIST_FUNCTION="$4"
-
-	local TARGET="Dockerfile"
-	assert_search "$UPGRADE_COMMAND" "$TARGET" "No \"$UPGRADE_COMMAND\" found in \"$TARGET\"!"
 
 	local CONTAINER_ID && CONTAINER_ID=$(docker run --quiet --rm --detach --entrypoint sleep "$IMG:$GIT_VERSION" 60)
-	local PKG_LIST && PKG_LIST=$("$UPGRADEABLE_PACKAGES_FUNCTION" "$CONTAINER_ID")
-	docker stop --timeout 0 "$CONTAINER_ID" > /dev/null
+	if docker exec --user root "$CONTAINER_ID" test -e "/sbin/apk"; then
+		local UPGRADE_COMMAND="apk upgrade"
+		local UPGRADEABLE_PACKAGES_FUNCTION="upgradeable_packages_apk"
+		local PROCESS_LIST_FUNCTION="process_list_apk"
+	elif docker exec --user root "$CONTAINER_ID" test -e "/bin/apt-get"; then
+		local UPGRADE_COMMAND="apt full-upgrade"
+		local UPGRADEABLE_PACKAGES_FUNCTION="upgradeable_packages_apt"
+		local PROCESS_LIST_FUNCTION="process_list_apt"
+	else
+		echo_error "No supported package manager found in image \"$IMG\"!"
+		return "$UNSUPPORTED_PACKAGE_MANAGER"
+	fi
 
+	local DF="Dockerfile"
+	local REBUILD_TRIGGER="ARG LAST_UPGRADE"
+	# Without the upgrade command, implicitly installed packages would not be updated
+	assert_search "$UPGRADE_COMMAND" "$DF" "No \"$UPGRADE_COMMAND\" found in \"$DF\"!"
+	# The REBUILD_TRIGGER is used to make an arbitrary change to the Dockerfile, triggering a rebuild of the image
+	assert_search "^$REBUILD_TRIGGER=.\+" "$DF" "No \"$REBUILD_TRIGGER\" found in \"$DF\"!"
+
+	local PKG_LIST && PKG_LIST=$("$UPGRADEABLE_PACKAGES_FUNCTION" "$CONTAINER_ID")
 	# Abort when no packages are available for upgrade, because mapfile can't
 	# handle an empty PKG_LIST properly (or I don't know how to use it). It
 	# would produce an array with one empty element, which breaks everything...
@@ -173,7 +185,7 @@ function update_packages {
 	# Append current date and time to the UPGRADE_KEYWORD without putting it in the
 	# changelog to keep track of implicit updates.
 	if updates_available; then
-		_UPDATES+=("ARG LAST_UPGRADE" ".\+" "\"$(date --iso-8601=seconds)\"" "_" "_" "$HIDDEN_UPDATE")
+		_UPDATES+=("$REBUILD_TRIGGER" ".\+" "\"$(date --iso-8601=seconds)\"" "_" "_" "$HIDDEN_UPDATE")
 	fi
 }
 
@@ -199,13 +211,6 @@ function process_list_apk {
 	done
 }
 
-# Check the provided Docker image for package updates by using the Alpine Package Keeper (apk)
-function update_packages_apk {
-	local IMG="$1"
-
-	update_packages "$IMG" "apk upgrade" "upgradeable_packages_apk" "process_list_apk"
-}
-
 # Get a list of upgradeable packages in a Debian container
 function upgradeable_packages_apt {
 	local CONTAINER_ID="$1"
@@ -225,13 +230,6 @@ function process_list_apt {
 		process_update "$PKG" "$CURRENT_VERSION" "$NEW_VERSION"
 	done
 }
-
-# Check the provided Docker image for package updates by using the Advanced Package Tool (apt)
-function update_packages_apt {
-	local IMG="$1"
-	update_packages "$IMG" "apt full-upgrade" "upgradeable_packages_apt" "process_list_apt"
-}
-
 function update_github {
 	local REPO="$1"
 	local VERSION_ID="$2"
