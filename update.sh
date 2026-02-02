@@ -94,8 +94,8 @@ function save_changes {
 			continue
 		fi
 
-		local TARGET="Dockerfile"
-		assert_replace "\($ID$ASSIGNMENT_REGEX\)$CURRENT_VALUE" "\1$NEW_VALUE" "$TARGET" "Item \"$ID $CURRENT_VALUE\" not found in \"$TARGET\""
+		local DF="Dockerfile"
+		assert_replace "\($ID$ASSIGNMENT_REGEX\)$CURRENT_VALUE" "\1$NEW_VALUE" "$DF" "Item \"$ID $CURRENT_VALUE\" not found in \"$DF\""
 	done
 }
 
@@ -231,6 +231,8 @@ function process_list_apt {
 		process_update "$PKG" "$CURRENT_VERSION" "$NEW_VERSION"
 	done
 }
+
+# Check for update on GitHub
 function update_github {
 	local REPO="$1"
 	local VERSION_ID="$2"
@@ -309,7 +311,7 @@ cd "$REPO_DIR"
 source "$SCRIPTS_DIR/helpers.sh"
 docker_reachable
 
-# Customizations to update workflow
+# Customizations to update process
 source "$REPO_DIR/custom/update.sh"
 var_is_set "MAIN_ITEM"
 var_is_set "GIT_VERSION"
