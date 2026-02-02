@@ -6,6 +6,7 @@ set -e -u -o pipefail
 # Return values
 SUCCESS=0
 SCRAPE_FAILED=201
+UNSUPPORTED_PACKAGE_MANAGER=202
 
 # Definitions
 ASSIGNMENT_REGEX="[ =:]"
