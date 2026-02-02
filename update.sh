@@ -137,15 +137,14 @@ function commit_changes {
 }
 
 # Check for base image update on hub.docker.com
-function update_image {
-	local IMG="$1"
-	local IMG_ESCAPED="${IMG//+/\\+}"
-	local VERSION_REGEX="$2"
-	local PRETTY_NAME="${3-$IMG}"
+function update_base_image {
+	local VERSION_REGEX="$1"
 
-	local CURRENT_VERSION && CURRENT_VERSION=$(grep --only-matching --perl-regexp "(?<=FROM $IMG_ESCAPED:)$VERSION_REGEX" "Dockerfile")
-	local NEW_VERSION && NEW_VERSION=$(curl_request "https://registry.hub.docker.com/v2/repositories/$IMG/tags?page_size=128" | jq --raw-output ".results[].name" | grep --only-matching --perl-regexp "^$VERSION_REGEX" | sort --version-sort | tail -n 1)
-	process_update "$IMG" "$CURRENT_VERSION" "$NEW_VERSION" "$PRETTY_NAME"
+	local IMG && IMG=$(grep --only-matching --perl-regexp "(?<=^FROM ).+" "Dockerfile")
+	local NAME && NAME="$(cut -d ":" -f 1 <<< "$IMG")"
+	local CURRENT_VERSION && CURRENT_VERSION="$(cut -d ":" -f 2 <<< "$IMG")"
+	local NEW_VERSION && NEW_VERSION=$(curl_request "https://registry.hub.docker.com/v2/repositories/$NAME/tags?page_size=128" | jq --raw-output ".results[].name" | grep --only-matching --perl-regexp "^$VERSION_REGEX" | sort --version-sort | tail -n 1)
+	process_update "$IMG" "$CURRENT_VERSION" "$NEW_VERSION" "Base Image $IMG"
 }
 
 # Check the provided Docker image for package updates with a package manager
