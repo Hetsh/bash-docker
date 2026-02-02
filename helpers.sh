@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Return values
+SUCCESS=0
 DOCKER_NOT_REACHABLE=101
 REQUEST_FAILED=102
 EXTRACTION_FAILED=103
@@ -40,7 +41,7 @@ function sed_search {
 	# result.
 	local EXIT_CODE && EXIT_CODE=$(sed --quiet "\|$PATTERN|q123" "$TARGET"; echo "$?")
 	if test "$EXIT_CODE" == "123"; then
-		return
+		return $SUCCESS
 	elif test "$EXIT_CODE" == "0"; then
 		return "$PATTERN_NOT_FOUND"
 	else
