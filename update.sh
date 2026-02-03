@@ -145,7 +145,7 @@ function update_base_image {
 	local NAME && NAME="$(cut -d ":" -f 1 <<< "$IMG")"
 	local CURRENT_VERSION && CURRENT_VERSION="$(cut -d ":" -f 2 <<< "$IMG")"
 	local NEW_VERSION && NEW_VERSION=$(curl_request "https://registry.hub.docker.com/v2/repositories/$NAME/tags?page_size=128" | jq --raw-output ".results[].name" | grep --only-matching --perl-regexp "^$VERSION_REGEX" | sort --version-sort | tail -n 1)
-	process_update "$IMG" "$CURRENT_VERSION" "$NEW_VERSION" "Base Image $IMG"
+	process_update "$NAME" "$CURRENT_VERSION" "$NEW_VERSION" "Base Image $NAME"
 }
 
 # Check the provided Docker image for package updates with a package manager
