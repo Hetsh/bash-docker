@@ -73,13 +73,32 @@ function assert_replace {
 }
 
 # Get value from file by key
-extract_val() {
+function get_val {
 	local KEY="$1"
 	local FILE="$2"
 	local SEPARATOR="${4:-"[ =:]"}"
 	local REGEX="${3:-".*"}"
 
-	local VALUE && VALUE="$(grep --perl-regexp --only-matching "(?<=$KEY$SEPARATOR)$REGEX" "$FILE" | sed -e 's/^"//' -e 's/"$//')"
+	grep --perl-regexp --only-matching "(?<=$KEY$SEPARATOR)$REGEX" "$FILE" | sed -e 's/^"//' -e 's/"$//'
+}
+
+# Get value from file by key and expand variables
+function extract_val {
+	local KEY="$1"
+	local FILE="$2"
+
+	local VALUE && VALUE="\$$KEY"
+	while true; do
+		local VARIABLES && VARIABLES=$(grep --only-matching --perl-regexp '\${?\w+' <<< "$VALUE" || true)
+		if test -z "${VARIABLES-}"; then
+			break
+		fi
+		for VAR in $VARIABLES; do
+			local VAR_NAME && VAR_NAME="${VAR//[\${]/}"
+			local VAR_VALUE && VAR_VALUE="$(get_val "$VAR_NAME" "$FILE" || true)"
+			VALUE="${VALUE//$VAR/$VAR_VALUE}"
+		done
+	done
 	if test -z "$VALUE"; then
 		echo_error "Failed to extract value of \"$KEY\" from \"$FILE\"!"
 		return "$EXTRACTION_FAILED"
