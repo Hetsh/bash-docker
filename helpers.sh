@@ -26,7 +26,7 @@ function echo_error {
 function docker_reachable {
 	if ! docker version &> /dev/null; then
 		echo_error "Docker daemon is not running or you have insufficient permissions!"
-		return $DOCKER_NOT_REACHABLE
+		return "$DOCKER_NOT_REACHABLE"
 	fi
 }
 
@@ -41,7 +41,7 @@ function sed_search {
 	# result.
 	local EXIT_CODE && EXIT_CODE=$(sed --quiet "\|$PATTERN|q123" "$TARGET"; echo "$?")
 	if test "$EXIT_CODE" == "123"; then
-		return $SUCCESS
+		return "$SUCCESS"
 	elif test "$EXIT_CODE" == "0"; then
 		return "$PATTERN_NOT_FOUND"
 	else
@@ -82,7 +82,7 @@ extract_val() {
 	local VALUE && VALUE="$(grep --perl-regexp --only-matching "(?<=$KEY$SEPARATOR)$REGEX" "$FILE" | sed -e 's/^"//' -e 's/"$//')"
 	if test -z "$VALUE"; then
 		echo_error "Failed to extract value of \"$KEY\" from \"$FILE\"!"
-		return $EXTRACTION_FAILED
+		return "$EXTRACTION_FAILED"
 	fi
 
 	local -n EXPORT="$KEY"
@@ -113,15 +113,15 @@ function var_is_set {
 	local VAR_NAME="$1"
 	if test -z "${!VAR_NAME+x}"; then
 		echo_error "\"$VAR_NAME\" is not set!"
-		return $VARIABLE_NOT_SET
+		return "$VARIABLE_NOT_SET"
 	fi
 }
 
 # Ask user if action should be performed
-confirm_action() {
+function confirm_action {
 	local MESSAGE="$1"
-	read -p "$MESSAGE [y/n]" -n 1 -r && echo
+	local REPLY && read -p "$MESSAGE [y/n]" -n 1 -r; echo
 	if test "$REPLY" != "y"; then
-		return $ACTION_DENIED
+		return "$ACTION_DENIED"
 	fi
 }
