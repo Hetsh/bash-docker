@@ -28,7 +28,10 @@ source "$SCRIPTS_DIR/helpers.sh"
 docker_reachable
 
 # Customizations to bootstrap process
-source "$REPO_DIR/custom/bootstrap.sh"
+BOOTSTRAP_CUSTOMIZATIONS="$REPO_DIR/custom/bootstrap.sh"
+if test -f "$BOOTSTRAP_CUSTOMIZATIONS"; then
+	source "$BOOTSTRAP_CUSTOMIZATIONS"
+fi
 
 #Install SystemD service template
 UNIT_PREFIX="compose"

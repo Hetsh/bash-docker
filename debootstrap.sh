@@ -22,4 +22,7 @@ if test -f "$UNIT_PATH"; then
 fi
 
 # Customizations to debootstrap process
-source "$REPO_DIR/custom/debootstrap.sh"
+DEBOOTSTRAP_CUSTOMIZATIONS="$REPO_DIR/custom/debootstrap.sh"
+if test -f "$DEBOOTSTRAP_CUSTOMIZATIONS"; then
+	source "$DEBOOTSTRAP_CUSTOMIZATIONS"
+fi

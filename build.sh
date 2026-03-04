@@ -61,7 +61,10 @@ source "$SCRIPTS_DIR/helpers.sh"
 docker_reachable
 
 # Customizations to build process
-source "$REPO_DIR/custom/build.sh"
+BUILD_CUSTOMIZATIONS="$REPO_DIR/custom/build.sh"
+if test -f "$BUILD_CUSTOMIZATIONS"; then
+	source "$BUILD_CUSTOMIZATIONS"
+fi
 var_is_set "IMG_NAME"
 
 TASK="${1-}"

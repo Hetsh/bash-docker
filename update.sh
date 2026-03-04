@@ -312,7 +312,10 @@ source "$SCRIPTS_DIR/helpers.sh"
 docker_reachable
 
 # Customizations to update process
-source "$REPO_DIR/custom/update.sh"
+UPDATE_CUSTOMIZATIONS="$REPO_DIR/custom/update.sh"
+if test -f "$UPDATE_CUSTOMIZATIONS"; then
+	source "$UPDATE_CUSTOMIZATIONS"
+fi
 var_is_set "MAIN_ITEM"
 var_is_set "GIT_VERSION"
 
