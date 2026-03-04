@@ -3,12 +3,27 @@
 # Abort on any error
 set -e -u -o pipefail
 
+# Return values
+COMPOSE_FILE_MISSING=401
+
+# Constants
+COMPOSE_FILE="docker-compose.yml"
+
 
 # Relative file paths
 SCRIPT=$(realpath "$0")
 SCRIPTS_DIR=$(dirname "$SCRIPT")
 REPO_DIR=$(dirname "$SCRIPTS_DIR")
 cd "$REPO_DIR"
+
+# Useful functions
+source "$SCRIPTS_DIR/helpers.sh"
+
+# Expects Docker compose file in REPO_DIR
+if test ! -f "$COMPOSE_FILE"; then
+	echo_error "$COMPOSE_FILE is missing!"
+	exit "$COMPOSE_FILE_MISSING"
+fi
 
 # Stop service and disable start after reboot
 UNIT_PREFIX="compose"

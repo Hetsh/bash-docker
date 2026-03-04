@@ -5,10 +5,12 @@ set -e -u -o pipefail
 
 # Return values
 SUCCESS=0
-SCRAPE_FAILED=201
-UNSUPPORTED_PACKAGE_MANAGER=202
+DOCKERFILE_MISSING=201
+SCRAPE_FAILED=202
+UNSUPPORTED_PACKAGE_MANAGER=203
 
-# Definitions
+# Constants
+DOCKERFILE="Dockerfile"
 ASSIGNMENT_REGEX="[ =:]"
 EXPLICIT_UPDATE="explicit"
 IMPLICIT_UPDATE="implicit"
@@ -94,8 +96,7 @@ function save_changes {
 			continue
 		fi
 
-		local DF="Dockerfile"
-		assert_replace "\($ID$ASSIGNMENT_REGEX\)$CURRENT_VALUE" "\1$NEW_VALUE" "$DF" "Item \"$ID $CURRENT_VALUE\" not found in \"$DF\""
+		assert_replace "\($ID$ASSIGNMENT_REGEX\)$CURRENT_VALUE" "\1$NEW_VALUE" "$DOCKERFILE" "Item \"$ID $CURRENT_VALUE\" not found in \"$DOCKERFILE\""
 	done
 }
 
@@ -166,12 +167,11 @@ function update_packages {
 		return "$UNSUPPORTED_PACKAGE_MANAGER"
 	fi
 
-	local DF="Dockerfile"
 	local REBUILD_TRIGGER="ARG LAST_UPGRADE"
 	# Without the upgrade command, implicitly installed packages would not be updated
-	assert_search "$UPGRADE_COMMAND" "$DF" "No \"$UPGRADE_COMMAND\" found in \"$DF\"!"
+	assert_search "$UPGRADE_COMMAND" "$DOCKERFILE" "No \"$UPGRADE_COMMAND\" found in \"$DOCKERFILE\"!"
 	# The REBUILD_TRIGGER is used to make an arbitrary change to the Dockerfile, triggering a rebuild of the image
-	assert_search "^$REBUILD_TRIGGER=.\+" "$DF" "No \"$REBUILD_TRIGGER\" found in \"$DF\"!"
+	assert_search "^$REBUILD_TRIGGER=.\+" "$DOCKERFILE" "No \"$REBUILD_TRIGGER\" found in \"$DOCKERFILE\"!"
 
 	local PKG_LIST && PKG_LIST=$("$UPGRADEABLE_PACKAGES_FUNCTION" "$CONTAINER_ID")
 	# Abort when no packages are available for upgrade, because mapfile can't
@@ -307,9 +307,15 @@ SCRIPTS_DIR=$(dirname "$SCRIPT")
 REPO_DIR=$(dirname "$SCRIPTS_DIR")
 cd "$REPO_DIR"
 
-# Check access to docker daemon
+# Useful functions
 source "$SCRIPTS_DIR/helpers.sh"
 docker_reachable
+
+# Expects Dockerfile in REPO_DIR
+if test ! -f "$DOCKERFILE"; then
+	echo_error "$DOCKERFILE is missing!"
+	exit "$DOCKERFILE_MISSING"
+fi
 
 # Customizations to update process
 UPDATE_CUSTOMIZATIONS="$REPO_DIR/custom/update.sh"

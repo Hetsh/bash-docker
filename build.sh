@@ -5,7 +5,11 @@ set -e -u -o pipefail
 
 # Return values
 SUCCESS=0
-UNKNOWN_TASK=1
+DOCKERFILE_MISSING=1
+UNKNOWN_TASK=2
+
+# Constants
+DOCKERFILE="Dockerfile"
 
 # Build image and export it's identifier to variable IMG_ID
 function build_image {
@@ -56,9 +60,15 @@ SCRIPTS_DIR=$(dirname "$SCRIPT")
 REPO_DIR=$(dirname "$SCRIPTS_DIR")
 cd "$REPO_DIR"
 
-# Check access to docker daemon
+# Useful functions
 source "$SCRIPTS_DIR/helpers.sh"
 docker_reachable
+
+# Expects Dockerfile in REPO_DIR
+if test ! -f "$DOCKERFILE"; then
+	echo_error "$DOCKERFILE is missing!"
+	exit "$DOCKERFILE_MISSING"
+fi
 
 # Customizations to build process
 BUILD_CUSTOMIZATIONS="$REPO_DIR/custom/build.sh"

@@ -4,7 +4,11 @@
 set -e -u -o pipefail
 
 # Return values
-UPLOAD_ABORT=301
+COMPOSE_FILE_MISSING=301
+UPLOAD_ABORT=302
+
+# Constants
+COMPOSE_FILE="docker-compose.yml"
 
 # Ask user to upload file
 function confirm_upload {
@@ -23,9 +27,15 @@ SCRIPTS_DIR=$(dirname "$SCRIPT")
 REPO_DIR=$(dirname "$SCRIPTS_DIR")
 cd "$REPO_DIR"
 
-# Check access to docker daemon
+# Useful functions
 source "$SCRIPTS_DIR/helpers.sh"
 docker_reachable
+
+# Expects Docker compose file in REPO_DIR
+if test ! -f "$COMPOSE_FILE"; then
+	echo_error "$COMPOSE_FILE is missing!"
+	exit "$COMPOSE_FILE_MISSING"
+fi
 
 # Customizations to bootstrap process
 BOOTSTRAP_CUSTOMIZATIONS="$REPO_DIR/custom/bootstrap.sh"
