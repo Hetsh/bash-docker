@@ -39,5 +39,6 @@ fi
 # Customizations to debootstrap process
 DEBOOTSTRAP_CUSTOMIZATIONS="$REPO_DIR/custom/debootstrap.sh"
 if test -f "$DEBOOTSTRAP_CUSTOMIZATIONS"; then
+	# shellcheck disable=SC1090
 	source "$DEBOOTSTRAP_CUSTOMIZATIONS"
 fi

@@ -73,6 +73,7 @@ fi
 # Customizations to build process
 BUILD_CUSTOMIZATIONS="$REPO_DIR/custom/build.sh"
 if test -f "$BUILD_CUSTOMIZATIONS"; then
+	# shellcheck disable=SC1090
 	source "$BUILD_CUSTOMIZATIONS"
 fi
 var_is_set "IMG_NAME"

@@ -320,6 +320,7 @@ fi
 # Customizations to update process
 UPDATE_CUSTOMIZATIONS="$REPO_DIR/custom/update.sh"
 if test -f "$UPDATE_CUSTOMIZATIONS"; then
+	# shellcheck disable=SC1090
 	source "$UPDATE_CUSTOMIZATIONS"
 fi
 var_is_set "MAIN_ITEM"

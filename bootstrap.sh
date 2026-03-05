@@ -40,6 +40,7 @@ fi
 # Customizations to bootstrap process
 BOOTSTRAP_CUSTOMIZATIONS="$REPO_DIR/custom/bootstrap.sh"
 if test -f "$BOOTSTRAP_CUSTOMIZATIONS"; then
+	# shellcheck disable=SC1090
 	source "$BOOTSTRAP_CUSTOMIZATIONS"
 fi
 
