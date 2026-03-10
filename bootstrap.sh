@@ -75,5 +75,5 @@ echo ""
 echo "Bootstrap succesful!"
 if confirm_action "Do you want to start the service now?"; then
 	systemctl start "$UNIT_NAME" --no-block
-	journalctl --follow --unit="$UNIT_NAME"
+	journalctl --all --follow --unit="$UNIT_NAME"
 fi
