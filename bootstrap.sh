@@ -52,14 +52,15 @@ if test ! -f "$UNIT_PATH"; then
 Description=docker compose running %I
 Requires=docker.service
 After=docker.service
-StartLimitIntervalSec=5
-StartLimitBurst=5
+StartLimitIntervalSec=60
+StartLimitBurst=30
 
 [Service]
 WorkingDirectory=%I
-ExecStart=/usr/bin/docker compose up
+ExecStart=/usr/bin/docker compose up --abort-on-container-exit
 ExecStop=/usr/bin/docker compose down
 Restart=on-failure
+RestartSec=1
 
 [Install]
 WantedBy=multi-user.target" > "$UNIT_PATH"
