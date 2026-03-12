@@ -95,7 +95,7 @@ case "$TASK" in
 	"--upload")
 		find_tags
 		TAGS_EXIST=true
-		EXISTING_TAGS=$(curl_request "https://registry.hub.docker.com/v2/repositories/$IMG_NAME/tags")
+		EXISTING_TAGS=$(curl_request "https://registry.hub.docker.com/v2/repositories/$IMG_NAME/tags" || true)
 		for TAG in "${TAGS[@]}"; do
 			if ! grep --quiet --only-matching "\"name\":\"$TAG\"" <<< "$EXISTING_TAGS"; then
 				TAGS_EXIST=false
