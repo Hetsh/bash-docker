@@ -72,7 +72,7 @@ function process_update {
 	# All other updates are implicit, e.g. packages already installed in
 	# the base image, explicitly installed packages without a pinned version,
 	# or an implicitly installed dependency.
-	if sed_search "$ITEM$ASSIGNMENT_REGEX$CURRENT_VALUE" "Dockerfile"; then
+	if sed_search "$ITEM$ASSIGNMENT_REGEX$CURRENT_VALUE" "$DOCKERFILE"; then
 		_UPDATES+=("$EXPLICIT_UPDATE")
 	else
 		_UPDATES+=("$IMPLICIT_UPDATE")
@@ -142,7 +142,7 @@ function commit_changes {
 function update_base_image {
 	local VERSION_REGEX="$1"
 
-	local IMG && IMG=$(grep --only-matching --perl-regexp "(?<=^FROM ).+" "Dockerfile")
+	local IMG && IMG=$(grep --only-matching --perl-regexp "(?<=^FROM ).+" "$DOCKERFILE")
 	local NAME && NAME="$(cut -d ":" -f 1 <<< "$IMG")"
 	local CURRENT_VERSION && CURRENT_VERSION="$(cut -d ":" -f 2 <<< "$IMG")"
 	local NEW_VERSION && NEW_VERSION=$(curl_request "https://registry.hub.docker.com/v2/repositories/$NAME/tags?page_size=128" | jq --raw-output ".results[].name" | grep --only-matching --perl-regexp "^$VERSION_REGEX" | sort --version-sort | tail -n 1)
@@ -240,7 +240,7 @@ function update_github {
 	local PRETTY_NAME="${4-$VERSION_ID}"
 	local CLEANUP_REGEX="${5-"^v"}"
 
-	local CURRENT_VERSION && CURRENT_VERSION=$(grep --only-matching --perl-regexp "(?<=$VERSION_ID$ASSIGNMENT_REGEX)$VERSION_REGEX" "Dockerfile")
+	local CURRENT_VERSION && CURRENT_VERSION=$(grep --only-matching --perl-regexp "(?<=$VERSION_ID$ASSIGNMENT_REGEX)$VERSION_REGEX" "$DOCKERFILE")
 	local NEW_VERSION && NEW_VERSION=$(curl_request "https://api.github.com/repos/$REPO/releases/latest" | jq -r ".tag_name" | sed "s|$CLEANUP_REGEX||")
 	process_update "$VERSION_ID" "$CURRENT_VERSION" "$NEW_VERSION" "$PRETTY_NAME"
 }
@@ -252,7 +252,7 @@ function update_git {
 	local VERSION_REGEX="$3"
 	local PRETTY_NAME="${4-$VERSION_ID}"
 
-	local CURRENT_VERSION && CURRENT_VERSION=$(grep --only-matching --perl-regexp "(?<=$VERSION_ID$ASSIGNMENT_REGEX)$VERSION_REGEX" "Dockerfile")
+	local CURRENT_VERSION && CURRENT_VERSION=$(grep --only-matching --perl-regexp "(?<=$VERSION_ID$ASSIGNMENT_REGEX)$VERSION_REGEX" "$DOCKERFILE")
 	local NEW_VERSION && NEW_VERSION=$(git ls-remote --tags "$URL" | cut --only-delimited --field 2 | grep --only-matching --perl-regexp "(?<=refs/tags/)$VERSION_REGEX" | sort --version-sort | tail -n 1)
 	process_update "$VERSION_ID" "$CURRENT_VERSION" "$NEW_VERSION" "$PRETTY_NAME"
 }
@@ -264,7 +264,7 @@ function update_web {
 	local VAL_REGEX="$3"
 	local PRETTY_NAME="${4-$VAR}"
 
-	local CURRENT_VAR && CURRENT_VAR=$(grep --only-matching --perl-regexp "(?<=$VAR$ASSIGNMENT_REGEX)$VAL_REGEX" "Dockerfile")
+	local CURRENT_VAR && CURRENT_VAR=$(grep --only-matching --perl-regexp "(?<=$VAR$ASSIGNMENT_REGEX)$VAL_REGEX" "$DOCKERFILE")
 	local NEW_VAR && NEW_VAR=$(curl_request "$URL" | grep --only-matching --perl-regexp "$VAL_REGEX" | sort --version-sort | tail -n 1)
 	process_update "$VAR" "$CURRENT_VAR" "$NEW_VAR" "$PRETTY_NAME"
 }
@@ -286,7 +286,7 @@ function update_pypi {
 	local PKG="$1"
 	local VERSION_REGEX="$2"
 
-	local CURRENT_VERSION && CURRENT_VERSION=$(grep --only-matching --perl-regexp "(?<=$PKG=$ASSIGNMENT_REGEX)$VERSION_REGEX" "Dockerfile")
+	local CURRENT_VERSION && CURRENT_VERSION=$(grep --only-matching --perl-regexp "(?<=$PKG=$ASSIGNMENT_REGEX)$VERSION_REGEX" "$DOCKERFILE")
 	local NEW_VERSION && NEW_VERSION=$(curl_request "https://pypi.org/pypi/$PKG/json" | jq -r ".info.version")
 	process_update "$PKG" "$CURRENT_VERSION" "$NEW_VERSION"
 }
