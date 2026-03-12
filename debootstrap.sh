@@ -12,14 +12,14 @@ COMPOSE_FILE="docker-compose.yml"
 
 # Relative file paths
 SCRIPT=$(realpath "$0")
-SCRIPTS_DIR=$(dirname "$SCRIPT")
-REPO_DIR=$(dirname "$SCRIPTS_DIR")
-cd "$REPO_DIR"
+SCRIPTS_PATH=$(dirname "$SCRIPT")
+REPO_PATH=$(dirname "$SCRIPTS_PATH")
+cd "$REPO_PATH"
 
 # Useful functions
-source "$SCRIPTS_DIR/helpers.sh"
+source "$SCRIPTS_PATH/helpers.sh"
 
-# Expects Docker compose file in REPO_DIR
+# Expects Docker compose file in REPO_PATH
 if test ! -f "$COMPOSE_FILE"; then
 	echo_error "$COMPOSE_FILE is missing!"
 	exit "$COMPOSE_FILE_MISSING"
@@ -27,7 +27,7 @@ fi
 
 # Stop service and disable start after reboot
 UNIT_PREFIX="compose"
-UNIT_NAME="$UNIT_PREFIX@$(systemd-escape "$REPO_DIR")"
+UNIT_NAME="$UNIT_PREFIX@$(systemd-escape "$REPO_PATH")"
 systemctl disable "$UNIT_NAME" --no-block --now
 
 # Keeping the SystemD template
@@ -37,7 +37,7 @@ if test -f "$UNIT_PATH"; then
 fi
 
 # Customizations to debootstrap process
-DEBOOTSTRAP_CUSTOMIZATIONS="$REPO_DIR/custom/debootstrap.sh"
+DEBOOTSTRAP_CUSTOMIZATIONS="$REPO_PATH/custom/debootstrap.sh"
 if test -f "$DEBOOTSTRAP_CUSTOMIZATIONS"; then
 	# shellcheck disable=SC1090
 	source "$DEBOOTSTRAP_CUSTOMIZATIONS"

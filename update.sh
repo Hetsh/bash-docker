@@ -303,22 +303,22 @@ function check_for_updates {
 
 # Simpler git usage, relative file paths
 SCRIPT=$(realpath "$0")
-SCRIPTS_DIR=$(dirname "$SCRIPT")
-REPO_DIR=$(dirname "$SCRIPTS_DIR")
-cd "$REPO_DIR"
+SCRIPTS_PATH=$(dirname "$SCRIPT")
+REPO_PATH=$(dirname "$SCRIPTS_PATH")
+cd "$REPO_PATH"
 
 # Useful functions
-source "$SCRIPTS_DIR/helpers.sh"
+source "$SCRIPTS_PATH/helpers.sh"
 docker_reachable
 
-# Expects Dockerfile in REPO_DIR
+# Expects Dockerfile in REPO_PATH
 if test ! -f "$DOCKERFILE"; then
 	echo_error "$DOCKERFILE is missing!"
 	exit "$DOCKERFILE_MISSING"
 fi
 
 # Customizations to update process
-UPDATE_CUSTOMIZATIONS="$REPO_DIR/custom/update.sh"
+UPDATE_CUSTOMIZATIONS="$REPO_PATH/custom/update.sh"
 if test -f "$UPDATE_CUSTOMIZATIONS"; then
 	# shellcheck disable=SC1090
 	source "$UPDATE_CUSTOMIZATIONS"
