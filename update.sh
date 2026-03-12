@@ -103,9 +103,9 @@ function save_changes {
 # Push changes and next tag to git
 function commit_changes {
 	# Any update will be tagged with an incremented release counter
-	local CURRENT_RELEASE="${GIT_VERSION##*-}"
+	local CURRENT_RELEASE="${IMG_VERSION##*-}"
 	local NEXT_RELEASE="$((CURRENT_RELEASE + 1))"
-	local NEXT_VERSION="${GIT_VERSION%-*}-$NEXT_RELEASE"
+	local NEXT_VERSION="${IMG_VERSION%-*}-$NEXT_RELEASE"
 
 	# But if the main item was updated, use the item version as tag
 	if test -n "$MAIN_ITEM"; then
@@ -153,7 +153,7 @@ function update_base_image {
 function update_packages {
 	local IMG="$1"
 
-	local CONTAINER_ID && CONTAINER_ID=$(docker run --quiet --rm --detach --entrypoint sleep "$IMG:$GIT_VERSION" 60)
+	local CONTAINER_ID && CONTAINER_ID=$(docker run --quiet --rm --detach --entrypoint sleep "$IMG:$IMG_VERSION" 60)
 	if docker exec --user root "$CONTAINER_ID" test -e "/sbin/apk"; then
 		local UPGRADE_COMMAND="apk upgrade"
 		local UPGRADEABLE_PACKAGES_FUNCTION="upgradeable_packages_apk"
@@ -324,7 +324,7 @@ if test -f "$UPDATE_CUSTOMIZATIONS"; then
 	source "$UPDATE_CUSTOMIZATIONS"
 fi
 var_is_set "MAIN_ITEM"
-var_is_set "GIT_VERSION"
+var_is_set "IMG_VERSION"
 
 # Start the (maybe overwritten) update process
 check_for_updates
