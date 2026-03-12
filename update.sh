@@ -159,7 +159,7 @@ function update_packages {
 		local UPGRADEABLE_PACKAGES_FUNCTION="upgradeable_packages_apk"
 		local PROCESS_LIST_FUNCTION="process_list_apk"
 	elif docker exec --user root "$CONTAINER_ID" test -e "/bin/apt-get"; then
-		local UPGRADE_COMMAND="apt full-upgrade"
+		local UPGRADE_COMMAND="apt-get full-upgrade"
 		local UPGRADEABLE_PACKAGES_FUNCTION="upgradeable_packages_apt"
 		local PROCESS_LIST_FUNCTION="process_list_apt"
 	else
