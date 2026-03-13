@@ -28,7 +28,7 @@ fi
 # Stop service and disable start after reboot
 UNIT_PREFIX="compose"
 UNIT_NAME="$UNIT_PREFIX@$(systemd-escape "$REPO_PATH")"
-systemctl disable "$UNIT_NAME" --no-block --now
+systemctl disable "$UNIT_NAME" --now
 
 # Keeping the SystemD template
 UNIT_PATH="/etc/systemd/system/$UNIT_PREFIX@.service"
