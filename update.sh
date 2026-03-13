@@ -153,6 +153,9 @@ function update_base_image {
 function update_packages {
 	local IMG="$1"
 
+	# Pull image explicitly in case there is a local version that
+	# does not match the one on DockerHub
+	docker pull "$IMG:$IMG_VERSION" > /dev/null
 	local CONTAINER_ID && CONTAINER_ID=$(docker run --quiet --rm --detach --entrypoint sleep "$IMG:$IMG_VERSION" 60)
 	if docker exec --user root "$CONTAINER_ID" test -e "/sbin/apk"; then
 		local UPGRADE_COMMAND="apk upgrade"
